@@ -125,7 +125,7 @@
     "subscriptions-transport-ws": "^0.9.17",
     "terser": "^5.2.0",
     "ts-jest": "26.5.3",
-    "ts-node": "8.10.2",
+    "ts-node": "9.1.1",
     "typescript": "3.9.9",
     "wait-for-observables": "^1.0.3"
   },
