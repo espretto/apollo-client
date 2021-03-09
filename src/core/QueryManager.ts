@@ -1074,12 +1074,11 @@ export class QueryManager<TStore> {
         errorPolicy,
       });
 
-    const shouldNotifyOnNetworkStatusChange = () => (
+    const shouldNotify =
       notifyOnNetworkStatusChange &&
       typeof oldNetworkStatus === "number" &&
       oldNetworkStatus !== networkStatus &&
-      isNetworkRequestInFlight(networkStatus)
-    );
+      isNetworkRequestInFlight(networkStatus);
 
     switch (fetchPolicy) {
     default: case "cache-first": {
@@ -1091,14 +1090,7 @@ export class QueryManager<TStore> {
         ];
       }
 
-      if (returnPartialData) {
-        return [
-          resultsFromCache(diff),
-          resultsFromLink(true),
-        ];
-      }
-
-      if (shouldNotifyOnNetworkStatusChange()) {
+      if (returnPartialData || shouldNotify) {
         return [
           resultsFromCache(diff),
           resultsFromLink(true),
@@ -1113,7 +1105,7 @@ export class QueryManager<TStore> {
     case "cache-and-network": {
       const diff = readCache();
 
-      if (diff.complete || returnPartialData || shouldNotifyOnNetworkStatusChange()) {
+      if (diff.complete || returnPartialData || shouldNotify) {
         return [
           resultsFromCache(diff),
           resultsFromLink(true),
@@ -1131,11 +1123,9 @@ export class QueryManager<TStore> {
       ];
 
     case "network-only":
-      if (shouldNotifyOnNetworkStatusChange()) {
-        const diff = readCache();
-
+      if (shouldNotify) {
         return [
-          resultsFromCache(diff),
+          resultsFromCache(readCache()),
           resultsFromLink(true),
         ];
       }
@@ -1143,8 +1133,11 @@ export class QueryManager<TStore> {
       return [resultsFromLink(true)];
 
     case "no-cache":
-      if (shouldNotifyOnNetworkStatusChange()) {
-          return [resultsFromCache(queryInfo.getDiff()), resultsFromLink(false)];
+      if (shouldNotify) {
+        return [
+          resultsFromCache(queryInfo.getDiff()),
+          resultsFromLink(false),
+        ];
       }
 
       return [resultsFromLink(false)];
